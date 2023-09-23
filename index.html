@@ -16,10 +16,13 @@
     <h1> 게임 Over 시 다시 시작하고 싶으면 SpaceBar를 누르세요 </h1>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
     <div id="score" align="center"></div>
-    <script>
+    <div id="highScore" align="center"></div>
+    <script> 
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         const scoreElement = document.getElementById("score");
+        const highScoreElement = document.getElementById("highScore");
+        let highScore = localStorage.getItem("highScore") || 0;
         
         const GRID_SIZE = 20;
         const SCREEN_SIZE = 20;
@@ -72,13 +75,22 @@
                 ctx.fillText("Game Over", 140, 200);
                 ctx.fillText("Apples Eaten: " + applesEaten, 120, 250);
                 ctx.fillText("Press Space to Restart", 80, 300);
-                scoreElement.textContent = "Score : " + applesEaten;
+                scoreElement.textContent = "점수 : " + applesEaten;
+                updateHighScore();
+                highScoreElement.textContent = "최고 점수 : " + highScore;
             }
         }
         
         function spawnApple() {
             appleX = Math.floor(Math.random() * SCREEN_SIZE);
             appleY = Math.floor(Math.random() * SCREEN_SIZE);
+        }
+
+        function updateHighScore() {
+            if (applesEaten > highScore) {
+                highScore = applesEaten;
+                localStorage.setItem("highScore", highScore)
+            }
         }
         
         function updateGame() {
