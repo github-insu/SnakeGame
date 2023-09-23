@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Snake Game</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1> 게임 Over 시 다시 시작하고 싶으면 SpaceBar를 누르세요 </h1>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        const GRID_SIZE = 20;
+        const SCREEN_SIZE = 20;
+        const MAX_BODY_PARTS = (SCREEN_SIZE*SCREEN_SIZE)/(GRID_SIZE*GRID_SIZE);
+        
+        let x = new Array(MAX_BODY_PARTS);
+        let y = new Array(MAX_BODY_PARTS);
+        let bodyParts = 6;
+        let applesEaten = 0;
+        let appleX, appleY;
+        let gameRunning = true;
+        let leftDirection = false;
+        let rightDirection = true;
+        let upDirection = false;
+        let downDirection = false;
+        let gameSpeed = 75;
+        let gameInterval;
+        
+        function startGame() {
+            for (let i = 0; i < bodyParts; i++) {
+                x[i] = 0;
+                y[i] = 0;
+            }
+            spawnApple();
+            
+            document.addEventListener("keydown", changeDirection);
+            
+            if (gameInterval) clearInterval(gameInterval); // 이전 interval이 있다면 멈춤
+                gameInterval = setInterval(updateGame, gameSpeed); // setInterval을 변수에 저장
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (gameRunning) {
+                for (let i = 0; i < bodyParts; i++) {
+                    if (i === 0) {
+                        ctx.fillStyle = "green";
+                    } else {
+                        ctx.fillStyle = "#2d9c00";
+                    }
+                    ctx.fillRect(x[i] * GRID_SIZE, y[i] * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                }
+                
+                ctx.fillStyle = "red";
+                ctx.fillRect(appleX * GRID_SIZE, appleY * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+            } else {
+                ctx.font = "30px Arial";
+                ctx.fillStyle = "white";
+                ctx.fillText("Game Over", 140, 200);
+                ctx.fillText("Apples Eaten: " + applesEaten, 120, 250);
+                ctx.fillText("Press Space to Restart", 80, 300);
+            }
+        }
+        
+        function spawnApple() {
+            appleX = Math.floor(Math.random() * SCREEN_SIZE);
+            appleY = Math.floor(Math.random() * SCREEN_SIZE);
+        }
+        
+        function updateGame() {
+            if (gameRunning) {
+                for (let i = bodyParts; i > 0; i--) {
+                    x[i] = x[i-1];
+                    y[i] = y[i-1];
+                }
+                
+                if (leftDirection) {
+                    x[0] -= 1;
+                }
+                
+                if (rightDirection) {
+                    x[0] += 1;
+                }
+                
+                if (upDirection) {
+                    y[0] -= 1;
+                }
+                
+                if (downDirection) {
+                    y[0] += 1;
+                }
+                
+                if (x[0] === appleX && y[0] === appleY) {
+                    bodyParts++;
+                    applesEaten++;
+                    spawnApple();
+                }
+                
+                for (let i = bodyParts; i > 0; i--) {
+                    if (x[0] === x[i] && y[0] === y[i]) {
+                        gameRunning = false;
+                    }
+                }
+                
+                if (x[0] >= SCREEN_SIZE || x[0] < 0 || y[0] >= SCREEN_SIZE || y[0] < 0) {
+                    gameRunning = false;
+                }
+            }
+            
+            draw();
+        }
+        
+        function changeDirection(e) {
+            switch(e.keyCode) {
+                case 37:
+                    if (!rightDirection) {
+                        leftDirection = true;
+                        upDirection = false;
+                        downDirection = false;
+                    }
+                    break;
+                case 39:
+                    if (!leftDirection) {
+                        rightDirection = true;
+                        upDirection = false;
+                        downDirection = false;
+                    }
+                    break;
+                case 38:
+                    if (!downDirection) {
+                        upDirection = true;
+                        rightDirection = false;
+                        leftDirection = false;
+                    }
+                    break;
+                case 40:
+                    if (!upDirection) {
+                        downDirection = true;
+                        rightDirection = false;
+                        leftDirection = false;
+                    }
+                    break;
+                case 32:
+                    if (!gameRunning) {
+                        resetGame();
+                    }
+                    break;
+            }
+        }
+        
+        function resetGame() {
+            bodyParts = 6;
+            applesEaten = 0;
+            gameRunning = true;
+            leftDirection = false;
+            rightDirection = true;
+            upDirection = false;
+            downDirection = false;
+            if (gameInterval) clearInterval(gameInterval); // 이전 interval이 있다면 멈춤
+            gameSpeed = 75; // 속도를 초기화
+            startGame();
+        }
+        
+        startGame();
+    </script>
+</body>
+</html>
